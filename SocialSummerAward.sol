@@ -70,7 +70,11 @@ contract SocialSummerAward is EIP712Upgradeable {
         (, address tokenContract, uint256 tokenId) = IERC6551Account(_req.receiptTbaAddress).token();
         address nftOwner = IERC721(tokenContract).ownerOf(tokenId);
         require(nftOwner != address(0), 'NFT owner is address 0.');
-        IERC20(_req.erc20Address).transfer(nftOwner, _req.amount);
+        if (_req.erc20Address == address(0)){
+            payable(nftOwner).transfer(_req.amount);
+        } else {
+            IERC20(_req.erc20Address).transfer(nftOwner, _req.amount);
+        }
         ids[_req.erc20Address][_req.id] = _req.amount;
         claimedTotalAmount[_req.erc20Address] += _req.amount;
         tbaClaimedTotalAmount[_req.receiptTbaAddress][_req.erc20Address] += _req.amount;
@@ -103,4 +107,6 @@ contract SocialSummerAward is EIP712Upgradeable {
             _req.erc20Address
         );
     }
+
+    receive() external payable {}
 }
